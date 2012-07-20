@@ -13,15 +13,13 @@ const (
 
 type Buffer struct {
 	Cells []termbox.Cell
-	Width int
-	Height int
+	Rect
 }
 
 func NewBuffer(w, h int) Buffer {
 	return Buffer{
 		Cells: make([]termbox.Cell, w*h),
-		Width: w,
-		Height: h,
+		Rect: Rect{0, 0, w, h},
 	}
 }
 
@@ -29,14 +27,13 @@ func TermboxBuffer() Buffer {
 	w, h := termbox.Size()
 	return Buffer{
 		Cells: termbox.CellBuffer(),
-		Width: w,
-		Height: h,
+		Rect: Rect{0, 0, w, h},
 	}
 }
 
 // Fills an area which is an intersection between buffer and 'dest' with 'proto'.
-func (this *Buffer) Fill(dest Rect, proto termbox.Cell) {
-	this.unsafe_fill(dest.Intersection(this.Rect()), proto)
+func (this *Buffer) Fill(dst Rect, proto termbox.Cell) {
+	this.unsafe_fill(this.Rect.Intersection(dst), proto)
 }
 
 // Resizes the Buffer, buffer contents are invalid after the resize.
@@ -52,21 +49,56 @@ func (this *Buffer) Resize(nw, nh int) {
 	}
 }
 
-// Unsafe part of the fill operation, doesn't check for bounds.
-func (this *Buffer) unsafe_fill(dest Rect, proto termbox.Cell) {
-	stride := this.Width - dest.Width
-	off := dest.Y * this.Width + dest.X
-	for y := 0; y < dest.Height; y++ {
-		for x := 0; x < dest.Width; x++ {
-			this.Cells[off] = proto
-			off++
-		}
-		off += stride
+func (this *Buffer) Blit(dstr Rect, srcx, srcy int, src *Buffer) {
+	srcr := Rect{srcx, srcy, 0, 0}
+
+	// first adjust 'srcr' if 'dstr' has negatives
+	if dstr.X < 0 {
+		srcr.X -= dstr.X
+	}
+	if dstr.Y < 0 {
+		srcr.Y -= dstr.Y
+	}
+
+	// adjust 'dstr' against 'this.Rect', copy 'dstr' size to 'srcr'
+	dstr = this.Rect.Intersection(dstr)
+	srcr.Width = dstr.Width
+	srcr.Height = dstr.Height
+
+	// adjust 'srcr' against 'src.Rect', copy 'srcr' size to 'dstr'
+	srcr = src.Rect.Intersection(srcr)
+	dstr.Width = srcr.Width
+	dstr.Height = srcr.Height
+
+	if dstr.IsEmpty() {
+		return
+	}
+
+	// blit!
+	srcstride := src.Width
+	dststride := this.Width
+	linew := dstr.Width
+	srcoff := src.Width * srcr.Y + srcr.X
+	dstoff := this.Width * dstr.Y + dstr.X
+	for i := 0; i < dstr.Height; i++ {
+		linesrc := src.Cells[srcoff:srcoff+linew]
+		linedst := this.Cells[dstoff:dstoff+linew]
+		copy(linedst, linesrc)
+		srcoff += srcstride
+		dstoff += dststride
 	}
 }
 
-func (this *Buffer) Rect() Rect {
-	return Rect{0, 0, this.Width, this.Height}
+// Unsafe part of the fill operation, doesn't check for bounds.
+func (this *Buffer) unsafe_fill(dest Rect, proto termbox.Cell) {
+	stride := this.Width
+	off := this.Width * dest.Y + dest.X
+	for y := 0; y < dest.Height; y++ {
+		for x := 0; x < dest.Width; x++ {
+			this.Cells[off+x] = proto
+		}
+		off += stride
+	}
 }
 
 // draws from left to right, 'off' is the beginning position
@@ -136,7 +168,7 @@ func (this *Buffer) DrawLabel(dest Rect, params *LabelParams, text string) {
 		dest.Height = 1
 	}
 
-	dest = dest.Intersection(this.Rect())
+	dest = this.Rect.Intersection(dest)
 	if dest.Height == 0 || dest.Width == 0 {
 		return
 	}
