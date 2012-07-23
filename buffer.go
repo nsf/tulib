@@ -103,16 +103,15 @@ func (this *Buffer) unsafe_fill(dest Rect, proto termbox.Cell) {
 
 // draws from left to right, 'off' is the beginning position
 // (DrawLabel uses that method)
-func (this *Buffer) draw_n_first_runes(off, n int, params *LabelParams, text string) {
-	for _, r := range text {
-		if n <= 0 {
-			break
-		}
+func (this *Buffer) draw_n_first_runes(off, n int, params *LabelParams, text []byte) {
+	for n > 0 {
+		r, size := utf8.DecodeRune(text)
 		this.Cells[off] = termbox.Cell{
 			Ch: r,
 			Fg: params.Fg,
 			Bg: params.Bg,
 		}
+		text = text[size:]
 		off++
 		n--
 	}
@@ -120,9 +119,9 @@ func (this *Buffer) draw_n_first_runes(off, n int, params *LabelParams, text str
 
 // draws from right to left, 'off' is the end position
 // (DrawLabel uses that method)
-func (this *Buffer) draw_n_last_runes(off, n int, params *LabelParams, text string) {
+func (this *Buffer) draw_n_last_runes(off, n int, params *LabelParams, text []byte) {
 	for n > 0 {
-		r, size := utf8.DecodeLastRuneInString(text)
+		r, size := utf8.DecodeLastRune(text)
 		this.Cells[off] = termbox.Cell{
 			Ch: r,
 			Fg: params.Fg,
@@ -150,20 +149,20 @@ var DefaultLabelParams = LabelParams{
 	false,
 }
 
-func skip_n_runes(x string, n int) string {
+func skip_n_runes(x []byte, n int) []byte {
 	if n <= 0 {
 		return x
 	}
 
 	for n > 0 {
-		_, size := utf8.DecodeRuneInString(x)
+		_, size := utf8.DecodeRune(x)
 		x = x[size:]
 		n--
 	}
 	return x
 }
 
-func (this *Buffer) DrawLabel(dest Rect, params *LabelParams, text string) {
+func (this *Buffer) DrawLabel(dest Rect, params *LabelParams, text []byte) {
 	if dest.Height != 1 {
 		dest.Height = 1
 	}
@@ -175,7 +174,7 @@ func (this *Buffer) DrawLabel(dest Rect, params *LabelParams, text string) {
 
 	ellipsis := termbox.Cell{Ch: params.Ellipsis, Fg: params.Fg, Bg: params.Bg}
 	off := dest.Y * this.Width + dest.X
-	textlen := utf8.RuneCountInString(text)
+	textlen := utf8.RuneCount(text)
 	n := textlen
 	if n > dest.Width {
 		// string doesn't fit in the dest rectangle, draw ellipsis
