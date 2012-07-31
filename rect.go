@@ -15,6 +15,10 @@ func (r Rect) IsEmpty() bool {
 	return r.Width <= 0 || r.Height <= 0
 }
 
+func (a Rect) FitsIn(b Rect) bool {
+	return a == a.Intersection(b)
+}
+
 func (a Rect) Intersection(b Rect) Rect {
 	// no intersection cases
 	if a.X >= b.Width || a.Y >= b.Height {
