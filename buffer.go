@@ -36,6 +36,18 @@ func (this *Buffer) Fill(dst Rect, proto termbox.Cell) {
 	this.unsafe_fill(this.Rect.Intersection(dst), proto)
 }
 
+// Sets a cell at specified position
+func (this *Buffer) Set(x, y int, proto termbox.Cell) {
+	if x < 0 || x >= this.Width {
+		return
+	}
+	if y < 0 || y >= this.Height {
+		return
+	}
+	off := this.Width * y + x
+	this.Cells[off] = proto
+}
+
 // Resizes the Buffer, buffer contents are invalid after the resize.
 func (this *Buffer) Resize(nw, nh int) {
 	this.Width = nw
