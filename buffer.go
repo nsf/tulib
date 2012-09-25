@@ -48,6 +48,19 @@ func (this *Buffer) Set(x, y int, proto termbox.Cell) {
 	this.Cells[off] = proto
 }
 
+// Gets a pointer to the cell at specified position or nil if it's out
+//  of range.
+func (this *Buffer) Get(x, y int) *termbox.Cell {
+	if x < 0 || x >= this.Width {
+		return nil
+	}
+	if y < 0 || y >= this.Height {
+		return nil
+	}
+	off := this.Width * y + x
+	return &this.Cells[off]
+}
+
 // Resizes the Buffer, buffer contents are invalid after the resize.
 func (this *Buffer) Resize(nw, nh int) {
 	this.Width = nw
