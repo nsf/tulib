@@ -1,13 +1,13 @@
 package tulib
 
 import (
-	"github.com/nsf/termbox-go"
 	"bytes"
+	"github.com/nsf/termbox-go"
 )
 
 func KeyToString(key termbox.Key, ch rune, mod termbox.Modifier) string {
 	var buf bytes.Buffer
-	if mod & termbox.ModAlt != 0 {
+	if mod&termbox.ModAlt != 0 {
 		buf.WriteString("M-")
 	}
 
@@ -112,7 +112,7 @@ func KeyToString(key termbox.Key, ch rune, mod termbox.Modifier) string {
 		buf.WriteString("C-y")
 	case termbox.KeyCtrlZ:
 		buf.WriteString("C-z")
- 	case termbox.KeyCtrlLsqBracket:
+	case termbox.KeyCtrlLsqBracket:
 		buf.WriteString("C-[")
 	case termbox.KeyCtrlBackslash:
 		buf.WriteString("C-\\")

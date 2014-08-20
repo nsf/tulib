@@ -19,7 +19,7 @@ type Buffer struct {
 func NewBuffer(w, h int) Buffer {
 	return Buffer{
 		Cells: make([]termbox.Cell, w*h),
-		Rect: Rect{0, 0, w, h},
+		Rect:  Rect{0, 0, w, h},
 	}
 }
 
@@ -27,7 +27,7 @@ func TermboxBuffer() Buffer {
 	w, h := termbox.Size()
 	return Buffer{
 		Cells: termbox.CellBuffer(),
-		Rect: Rect{0, 0, w, h},
+		Rect:  Rect{0, 0, w, h},
 	}
 }
 
@@ -44,7 +44,7 @@ func (this *Buffer) Set(x, y int, proto termbox.Cell) {
 	if y < 0 || y >= this.Height {
 		return
 	}
-	off := this.Width * y + x
+	off := this.Width*y + x
 	this.Cells[off] = proto
 }
 
@@ -57,7 +57,7 @@ func (this *Buffer) Get(x, y int) *termbox.Cell {
 	if y < 0 || y >= this.Height {
 		return nil
 	}
-	off := this.Width * y + x
+	off := this.Width*y + x
 	return &this.Cells[off]
 }
 
@@ -103,11 +103,11 @@ func (this *Buffer) Blit(dstr Rect, srcx, srcy int, src *Buffer) {
 	srcstride := src.Width
 	dststride := this.Width
 	linew := dstr.Width
-	srcoff := src.Width * srcr.Y + srcr.X
-	dstoff := this.Width * dstr.Y + dstr.X
+	srcoff := src.Width*srcr.Y + srcr.X
+	dstoff := this.Width*dstr.Y + dstr.X
 	for i := 0; i < dstr.Height; i++ {
-		linesrc := src.Cells[srcoff:srcoff+linew]
-		linedst := this.Cells[dstoff:dstoff+linew]
+		linesrc := src.Cells[srcoff : srcoff+linew]
+		linedst := this.Cells[dstoff : dstoff+linew]
 		copy(linedst, linesrc)
 		srcoff += srcstride
 		dstoff += dststride
@@ -117,7 +117,7 @@ func (this *Buffer) Blit(dstr Rect, srcx, srcy int, src *Buffer) {
 // Unsafe part of the fill operation, doesn't check for bounds.
 func (this *Buffer) unsafe_fill(dest Rect, proto termbox.Cell) {
 	stride := this.Width
-	off := this.Width * dest.Y + dest.X
+	off := this.Width*dest.Y + dest.X
 	for y := 0; y < dest.Height; y++ {
 		for x := 0; x < dest.Width; x++ {
 			this.Cells[off+x] = proto
@@ -159,10 +159,10 @@ func (this *Buffer) draw_n_last_runes(off, n int, params *LabelParams, text []by
 }
 
 type LabelParams struct {
-	Fg termbox.Attribute
-	Bg termbox.Attribute
-	Align Alignment
-	Ellipsis rune
+	Fg             termbox.Attribute
+	Bg             termbox.Attribute
+	Align          Alignment
+	Ellipsis       rune
 	CenterEllipsis bool
 }
 
@@ -198,7 +198,7 @@ func (this *Buffer) DrawLabel(dest Rect, params *LabelParams, text []byte) {
 	}
 
 	ellipsis := termbox.Cell{Ch: params.Ellipsis, Fg: params.Fg, Bg: params.Bg}
-	off := dest.Y * this.Width + dest.X
+	off := dest.Y*this.Width + dest.X
 	textlen := utf8.RuneCount(text)
 	n := textlen
 	if n > dest.Width {

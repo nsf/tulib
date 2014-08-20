@@ -1,9 +1,9 @@
 package tulib
 
 type Rect struct {
-	X int
-	Y int
-	Width int
+	X      int
+	Y      int
+	Width  int
 	Height int
 }
 
@@ -25,12 +25,12 @@ func (a Rect) Intersection(b Rect) Rect {
 		return Rect{0, 0, 0, 0}
 	}
 
-	if a.X + a.Width <= b.X || a.Y + a.Height <= b.Y {
+	if a.X+a.Width <= b.X || a.Y+a.Height <= b.Y {
 		return Rect{0, 0, 0, 0}
 	}
 
 	// adjust X or Width
-	if a.X + a.Width > b.X + b.Width {
+	if a.X+a.Width > b.X+b.Width {
 		a.Width = (b.X + b.Width) - a.X
 	}
 
@@ -40,7 +40,7 @@ func (a Rect) Intersection(b Rect) Rect {
 	}
 
 	// adjust Y or Height
-	if a.Y + a.Height > b.Y + b.Height {
+	if a.Y+a.Height > b.Y+b.Height {
 		a.Height = (b.Y + b.Height) - a.Y
 	}
 
