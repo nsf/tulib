@@ -21,7 +21,7 @@ func (a Rect) FitsIn(b Rect) bool {
 
 func (a Rect) Intersection(b Rect) Rect {
 	// no intersection cases
-	if a.X >= b.Width || a.Y >= b.Height {
+	if a.X >= b.X+b.Width || a.Y >= b.Y+b.Height {
 		return Rect{0, 0, 0, 0}
 	}
 
